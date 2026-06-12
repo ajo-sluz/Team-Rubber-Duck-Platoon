@@ -24,20 +24,12 @@
     </style>
 </head>
 <body>
-    <h1>Team Import</h1>
-    <p>Importiere eine JSON-Datei mit einer Liste von Fussballteams. Fehlerhafte Daten werden erkannt und angezeigt.</p>
-
-    <section>
-        <label for="teamFile">JSON-Datei wählen:</label>
-        <input type="file" id="teamFile" accept="application/json" />
-        <button id="importButton">Importieren</button>
-        <button id="clearButton">Zurücksetzen</button>
-    </section>
+    <h1>Teams</h1>
 
     <section id="feedback" aria-live="polite" style="margin-top:1rem"></section>
 
     <section id="teamSection" style="display:none; margin-top:1.5rem">
-        <h2>Importierte Teams</h2>
+        <h2>Teams</h2>
         <p id="teamCount"></p>
         <ul id="teamList"></ul>
     </section>
@@ -52,41 +44,15 @@
     </section>
 
     <script>
-        const teamFileInput = document.getElementById('teamFile');
-        const importButton = document.getElementById('importButton');
-        const clearButton = document.getElementById('clearButton');
         const feedback = document.getElementById('feedback');
         const teamSection = document.getElementById('teamSection');
         const teamCount = document.getElementById('teamCount');
         const teamList = document.getElementById('teamList');
-        let importedTeams = [];
 
         function showMessage(message, type = 'info') {
             const color = type === 'error' ? '#c0392b' : type === 'success' ? '#27ae60' : '#34495e';
             feedback.textContent = message;
             feedback.style.color = color;
-        }
-
-        function validateTeams(data) {
-            if (!Array.isArray(data)) {
-                return 'Die Datei muss ein Array von Teams enthalten.';
-            }
-
-            if (data.length === 0) {
-                return 'Die Teamliste darf nicht leer sein.';
-            }
-
-            for (let i = 0; i < data.length; i++) {
-                const team = data[i];
-                if (typeof team !== 'object' || team === null || Array.isArray(team)) {
-                    return `Team ${i + 1} ist kein gültiges Objekt.`;
-                }
-                if (typeof team.name !== 'string' || team.name.trim() === '') {
-                    return `Team ${i + 1} hat keinen gültigen Namen.`;
-                }
-            }
-
-            return null;
         }
 
         function renderTeamList(teams) {
@@ -96,54 +62,28 @@
                 item.textContent = `${index + 1}. ${team.name}`;
                 teamList.appendChild(item);
             });
-            teamCount.textContent = `${teams.length} Team${teams.length === 1 ? '' : 's'} importiert.`;
+            teamCount.textContent = `${teams.length} Team${teams.length === 1 ? '' : 's'} geladen.`;
             teamSection.style.display = 'block';
         }
 
-        function resetImport() {
-            importedTeams = [];
-            teamList.innerHTML = '';
-            teamCount.textContent = '';
-            teamSection.style.display = 'none';
-            showMessage('Import zurückgesetzt.', 'info');
-        }
-
-        function parseTeamFile(file) {
-            const reader = new FileReader();
-            reader.onload = () => {
-                try {
-                    const parsed = JSON.parse(reader.result);
-                    const error = validateTeams(parsed);
-                    if (error) {
-                        showMessage(error, 'error');
-                        return;
-                    }
-                    importedTeams = parsed;
-                    renderTeamList(importedTeams);
-                    showMessage('Import erfolgreich. Teams stehen für die Spielplanung zur Verfügung.', 'success');
-                } catch (err) {
-                    showMessage('Die Datei konnte nicht als gültiges JSON gelesen werden.', 'error');
+        fetch('teams.json')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
                 }
-            };
-            reader.onerror = () => {
-                showMessage('Fehler beim Lesen der Datei.', 'error');
-            };
-            reader.readAsText(file, 'UTF-8');
-        }
-
-        importButton.addEventListener('click', () => {
-            const file = teamFileInput.files[0];
-            if (!file) {
-                showMessage('Bitte wähle zuerst eine JSON-Datei aus.', 'error');
-                return;
-            }
-            parseTeamFile(file);
-        });
-
-        clearButton.addEventListener('click', () => {
-            teamFileInput.value = '';
-            resetImport();
-        });
+                return response.json();
+            })
+            .then(data => {
+                if (!Array.isArray(data) || data.length === 0) {
+                    showMessage('teams.json enthält kein gültiges Array.', 'error');
+                    return;
+                }
+                renderTeamList(data);
+                showMessage('teams.json erfolgreich geladen.', 'success');
+            })
+            .catch(err => {
+                showMessage(`Fehler beim Laden von teams.json: ${err.message}`, 'error');
+            });
     </script>
 </body>
 </html>
