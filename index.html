@@ -24,7 +24,66 @@
     </style>
 </head>
 <body>
-    <h1>Willkommen</h1>
-    <p>Das ist eine einfache HTML-Seite.</p>
+    <h1>Teams</h1>
+
+    <section id="feedback" aria-live="polite" style="margin-top:1rem"></section>
+
+    <section id="teamSection" style="display:none; margin-top:1.5rem">
+        <h2>Teams</h2>
+        <p id="teamCount"></p>
+        <ul id="teamList"></ul>
+    </section>
+
+    <section style="margin-top:1.5rem">
+        <h2>Format</h2>
+        <p>Die JSON-Datei muss ein Array mit Objekten enthalten. Jedes Team benötigt mindestens ein <code>name</code>-Feld.</p>
+        <pre>[
+  { "name": "FC Beispiel" },
+  { "name": "SV Demo" }
+]</pre>
+    </section>
+
+    <script>
+        const feedback = document.getElementById('feedback');
+        const teamSection = document.getElementById('teamSection');
+        const teamCount = document.getElementById('teamCount');
+        const teamList = document.getElementById('teamList');
+
+        function showMessage(message, type = 'info') {
+            const color = type === 'error' ? '#c0392b' : type === 'success' ? '#27ae60' : '#34495e';
+            feedback.textContent = message;
+            feedback.style.color = color;
+        }
+
+        function renderTeamList(teams) {
+            teamList.innerHTML = '';
+            teams.forEach((team, index) => {
+                const item = document.createElement('li');
+                item.textContent = `${index + 1}. ${team.name}`;
+                teamList.appendChild(item);
+            });
+            teamCount.textContent = `${teams.length} Team${teams.length === 1 ? '' : 's'} geladen.`;
+            teamSection.style.display = 'block';
+        }
+
+        fetch('teams.json')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!Array.isArray(data) || data.length === 0) {
+                    showMessage('teams.json enthält kein gültiges Array.', 'error');
+                    return;
+                }
+                renderTeamList(data);
+                showMessage('teams.json erfolgreich geladen.', 'success');
+            })
+            .catch(err => {
+                showMessage(`Fehler beim Laden von teams.json: ${err.message}`, 'error');
+            });
+    </script>
 </body>
 </html>
