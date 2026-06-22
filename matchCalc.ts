@@ -47,7 +47,6 @@ function calculateGoals(
         const minToExpected: number = expectedGoals - minGoals;
         const expectedToMaxRange : number = maxGoals - expectedGoals;
         const goalRangeTotal: number = Math.abs(minToExpected) + Math.abs(expectedToMaxRange);
-
         const teamFactorDifference = Math.abs(team1Factor - team2Factor);
 
         let goalsTeam1: number = 0;
@@ -88,7 +87,7 @@ function calculateGoals(
                             goalsTeam1++;
                         }
                         else{
-                            goalsTeam2;;
+                            goalsTeam2++;
                         }
                         goalAssigned = true;
                     }
