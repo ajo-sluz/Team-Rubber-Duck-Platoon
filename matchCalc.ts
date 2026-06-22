@@ -105,7 +105,7 @@ function assignStrength(teams: string[], maxStrengthDifference: number = 50): Ma
     
     for(let i = teamCount; i > 0; i--){
         const strengthFactor = (maxStrengthValue - i) / teamCount;
-        strengthMap.getOrInsert(teams[i - 1], strengthFactor);
+        strengthMap.set(teams[i - 1], strengthFactor);
     }
     return strengthMap
     
