@@ -1,10 +1,10 @@
 import teamsData from "./teams.json" with { type: "json" };
 
-interface Team {
+export interface Team {
   name: string;
 }
 
-interface Match {
+export interface Match {
   home: string;
   away: string;
   round: number;
