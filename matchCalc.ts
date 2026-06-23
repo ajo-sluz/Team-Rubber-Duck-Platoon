@@ -23,23 +23,25 @@ function calculateResults(
   maxGoals: number = 5,
   minGoals: number = 0,
   expectedGoals: number = 3,
+  homeAdvantagePercent: number = 15
 ): MatchResult[] {
   const results: MatchResult[] = [];
   for (let i = 0; i < matchPlan.length; i++) {
-    const team1Name: string = matchPlan[i].home;
-    const team1Factor: number = strengthMap.get(team1Name) ?? 1;
-    const team2Name = matchPlan[i].away;
-    const team2Factor = strengthMap.get(team2Name) ?? 1;
+    const homeTeamName: string = matchPlan[i].home;
+    const homeTeamFactor: number = strengthMap.get(homeTeamName) ?? 1;
+    const awayTeamName = matchPlan[i].away;
+    const awayTeamFactor = strengthMap.get(awayTeamName) ?? 1;
     const goals: number[] = calculateGoals(
-      team1Factor,
-      team2Factor,
+      homeTeamFactor,
+      awayTeamFactor,
       maxGoals,
       minGoals,
       expectedGoals,
+      homeAdvantagePercent
     );
     results.push({
-      homeTeamName: team1Name,
-      awayTeamName: team2Name,
+      homeTeamName: homeTeamName,
+      awayTeamName: awayTeamName,
       homeTeamGoals: goals[0],
       awayTeamGoals: goals[1],
       round: matchPlan[i].round,
@@ -50,27 +52,29 @@ function calculateResults(
 
 //Calculates to goals for a single match
 function calculateGoals(
-  team1Factor: number,
-  team2Factor: number,
+  homeTeamFactor: number,
+  awayTeamFactor: number,
   maxGoals: number,
   minGoals: number,
   expectedGoals: number,
+  homeAdvantagePercent: number,
 ): number[] {
   const minToExpected: number = expectedGoals - minGoals;
   const expectedToMaxRange: number = maxGoals - expectedGoals;
   const goalRangeTotal: number =
     Math.abs(minToExpected) + Math.abs(expectedToMaxRange);
-  const teamFactorDifference = Math.abs(team1Factor - team2Factor);
+  const teamFactorDifference: number = Math.abs(homeTeamFactor - awayTeamFactor);
+  const homeAdvantageFactor: number = (homeAdvantagePercent / 100) + 1
 
-  let goalsTeam1: number = 0;
-  let goalsTeam2: number = 0;
+  let goalsHome: number = 0;
+  let goalsAway: number = 0;
   for (let i = 0; i <= maxGoals; i++) {
     let goalChancePercent: number = 0;
     if (i < minGoals) {
       goalChancePercent = 100;
     } else {
       goalChancePercent = Math.round(teamFactorDifference * 100);
-      const currentGoals: number = goalsTeam1 + goalsTeam2;
+      const currentGoals: number = goalsHome + goalsAway;
       const multOffsetAbsolute: number = 1 - currentGoals / goalRangeTotal;
       if (currentGoals <= expectedGoals) {
         goalChancePercent = goalChancePercent * (1 + multOffsetAbsolute);
@@ -80,29 +84,29 @@ function calculateGoals(
     }
     if (Math.round(Math.random() * 100) <= goalChancePercent) {
       let goalAssigned: boolean = false;
-      let team1Score: number = 0;
-      let team2Score: number = 0;
+      let homeScore: number = 0;
+      let awayScore: number = 0;
       while (!goalAssigned) {
-        team1Score = Math.round(team1Score + Math.random() * 100 * team1Factor);
-        team2Score = Math.round(team2Score + Math.random() * 100 * team2Factor);
-        if (team1Score >= 100 || team2Score >= 100) {
-          if (team1Score === team2Score) {
+        homeScore = Math.round(homeScore + (Math.random() * 100 * homeTeamFactor * homeAdvantageFactor));
+        awayScore = Math.round(awayScore + (Math.random() * 100 * awayTeamFactor));
+        if (homeScore >= 100 || awayScore >= 100) {
+          if (homeScore === awayScore) {
             if (Math.random() < 0.5) {
-              goalsTeam1++;
+              goalsHome++;
             } else {
-              goalsTeam2++;
+              goalsAway++;
             }
-          } else if (team1Score > team2Score) {
-            goalsTeam1++;
+          } else if (homeScore > awayScore) {
+            goalsHome++;
           } else {
-            goalsTeam2++;
+            goalsAway++;
           }
           goalAssigned = true;
         }
       }
     }
   }
-  return [goalsTeam1, goalsTeam2];
+  return [goalsHome, goalsAway];
 }
 
 //Assigns team-strength factor/multiplier based on list position
