@@ -59,10 +59,7 @@ function calculateGoals(
   expectedGoals: number,
   homeAdvantagePercent: number,
 ): number[] {
-  const minToExpected: number = expectedGoals - minGoals;
-  const expectedToMaxRange: number = maxGoals - expectedGoals;
-  const goalRangeTotal: number =
-    Math.abs(minToExpected) + Math.abs(expectedToMaxRange);
+  const possibleGoalRange: number = Math.abs(minGoals - maxGoals);
   const teamFactorDifference: number = Math.abs(homeTeamFactor - awayTeamFactor);
   const homeAdvantageFactor: number = (homeAdvantagePercent / 100) + 1
 
@@ -75,7 +72,7 @@ function calculateGoals(
     } else {
       goalChancePercent = Math.round(teamFactorDifference * 100);
       const currentGoals: number = goalsHome + goalsAway;
-      const multOffsetAbsolute: number = 1 - currentGoals / goalRangeTotal;
+      const multOffsetAbsolute: number = 1 - currentGoals / possibleGoalRange;
       if (currentGoals <= expectedGoals) {
         goalChancePercent = goalChancePercent * (1 + multOffsetAbsolute);
       } else {
