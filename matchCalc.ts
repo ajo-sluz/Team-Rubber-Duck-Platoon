@@ -1,46 +1,46 @@
+import { Team, Match } from './spielplan.ts'
+
 export type MatchResult = {
-  team1Name: string;
-  team2Name: string;
-  team1Goals: number;
-  team2Goals: number;
+  homeTeamName: string;
+  awayTeamName: string;
+  homeTeamGoals: number;
+  awayTeamGoals: number;
+  round: number;
 };
 
-export function getMatchResults(teams: string[]): MatchResult[] {
+export function getMatchResults(teams: Team[], matchPlan: Match[]): MatchResult[] {
   const strengthMap: Map<string, number> = assignStrength(teams);
-  const results: MatchResult[] = calculateResults(teams, strengthMap);
+  const results: MatchResult[] = calculateResults(strengthMap, matchPlan);
   return results;
 }
 
 function calculateResults(
-  teams: string[],
   strengthMap: Map<string, number>,
+  matchPlan: Match[],
   maxGoals: number = 5,
   minGoals: number = 0,
   expectedGoals: number = 3,
 ): MatchResult[] {
   const results: MatchResult[] = [];
-  for (let i = 0; i < teams.length; i++) {
-    const team1Name: string = teams[i];
+  for (let i = 0; i < matchPlan.length; i++) {
+    const team1Name: string = matchPlan[i].home;
     const team1Factor: number = strengthMap.get(team1Name) ?? 1;
-    for (let j = 0; j < teams.length; j++) {
-      if (i != j) {
-        const team2Name = teams[j];
-        const team2Factor = strengthMap.get(team2Name) ?? 1;
-        const goals: number[] = calculateGoals(
-          team1Factor,
-          team2Factor,
-          maxGoals,
-          minGoals,
-          expectedGoals,
-        );
-        results.push({
-          team1Name: team1Name,
-          team2Name: team2Name,
-          team1Goals: goals[0],
-          team2Goals: goals[1],
-        });
-      }
-    }
+    const team2Name = matchPlan[i].away;
+    const team2Factor = strengthMap.get(team2Name) ?? 1;
+    const goals: number[] = calculateGoals(
+      team1Factor,
+      team2Factor,
+      maxGoals,
+      minGoals,
+      expectedGoals,
+    );
+    results.push({
+      homeTeamName: team1Name,
+      awayTeamName: team2Name,
+      homeTeamGoals: goals[0],
+      awayTeamGoals: goals[1],
+      round: matchPlan[i].round,
+    });
   }
   return results;
 }
@@ -102,7 +102,7 @@ function calculateGoals(
 }
 
 function assignStrength(
-  teams: string[],
+  teams: Team[],
   maxStrengthDifference: number = 50,
 ): Map<string, number> {
   const strengthMap: Map<string, number> = new Map<string, number>();
@@ -112,7 +112,7 @@ function assignStrength(
 
   for (let i = teamCount; i >= 0; i--) {
     const strengthFactor = (maxStrengthValue - i) / teamCount;
-    strengthMap.set(teams[i - 1], strengthFactor);
+    strengthMap.set(teams[i - 1].name, strengthFactor);
   }
   return strengthMap;
 }
