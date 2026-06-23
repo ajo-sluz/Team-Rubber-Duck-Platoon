@@ -110,7 +110,7 @@ function assignStrength(
 
   const maxStrengthValue = teamCount * (maxStrengthDifference / 100 + 1);
 
-  for (let i = teamCount; i >= 0; i--) {
+  for (let i = teamCount; i > 0; i--) {
     const strengthFactor = (maxStrengthValue - i) / teamCount;
     strengthMap.set(teams[i - 1].name, strengthFactor);
   }
