@@ -1,5 +1,6 @@
 import { Team, Match } from './spielplan.ts'
 
+//Return type
 export type MatchResult = {
   homeTeamName: string;
   awayTeamName: string;
@@ -8,12 +9,14 @@ export type MatchResult = {
   round: number;
 };
 
+//Function to call, returns results
 export function getMatchResults(teams: Team[], matchPlan: Match[]): MatchResult[] {
   const strengthMap: Map<string, number> = assignStrength(teams);
   const results: MatchResult[] = calculateResults(strengthMap, matchPlan);
   return results;
 }
 
+//Calculates results of all matches defined in matchPlan
 function calculateResults(
   strengthMap: Map<string, number>,
   matchPlan: Match[],
@@ -45,6 +48,7 @@ function calculateResults(
   return results;
 }
 
+//Calculates to goals for a single match
 function calculateGoals(
   team1Factor: number,
   team2Factor: number,
@@ -101,6 +105,7 @@ function calculateGoals(
   return [goalsTeam1, goalsTeam2];
 }
 
+//Assigns team-strength factor/multiplier based on list position
 function assignStrength(
   teams: Team[],
   maxStrengthDifference: number = 50,
